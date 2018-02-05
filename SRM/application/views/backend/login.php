@@ -81,8 +81,18 @@ var baseurl = '<?php echo base_url();?>';
 				<p>Please enter correct email and password!</p>
 			</div>
 			
-			<form method="post" role="form" id="form_login">
-			<!-- <?php echo form_open(base_url().'index.php?login/do_login'); ?> -->
+			<div class="form-group">
+				<div class="input_group">
+					<?php if($this->session->flashdata('login')){
+					?>
+					<p><?= $this->session->flashdata('login'); ?></p>
+					<?php
+					}
+					?>
+				</div>
+			</div>
+			<!-- <form method="post" role="form" id="form_login"> -->
+			<?php echo form_open(base_url().'index.php?login/do_login'); ?>
 
 				<div class="form-group">
 					
@@ -116,8 +126,8 @@ var baseurl = '<?php echo base_url();?>';
 				</div>
 				
 						
-			</form>
-			<!-- <?php echo form_close(); ?> -->
+			<!-- </form> -->
+			<?php echo form_close(); ?>
 			
 			
 			<div class="login-bottom-links">

@@ -299,12 +299,13 @@
         <!-- ACCOUNTING SECTION -->
         <li class="<?php
         if ($page_name == 'fee_structure' ||
-                $page_name == 'manage_language' ||
-                    $page_name == 'sms_settings')
+                $page_name == 'item_inventory' ||
+                    $page_name == 'expenses' ||
+                        $page_name == 'fee_collection')
                         echo 'opened active';
         ?> ">
             <a href="#">
-                <i class="entypo-lifebuoy"></i>
+                <i class="entypo-chart-bar"></i>
                 <span>Accounting Section</span>
             </a>
             <ul>
@@ -313,16 +314,22 @@
                         <span><i class="entypo-dot"></i> Fee Structure</span>
                     </a>
                 </li>
-                <li class="<?php if ($page_name == 'sms_settings') echo 'active'; ?> ">
-                    <a href="<?php echo base_url(); ?>index.php?admin/sms_settings">
-                        <span><i class="entypo-dot"></i> <?php echo get_phrase('sms_settings'); ?></span>
+                <li class="<?php if ($page_name == 'item_inventory') echo 'active'; ?> ">
+                    <a href="<?php echo base_url(); ?>index.php?admin/item_inventory">
+                        <span><i class="entypo-dot"></i>Item Inventory</span>
                     </a>
                 </li>
-                <!-- <li class="<?php if ($page_name == 'manage_language') echo 'active'; ?> ">
-                    <a href="<?php echo base_url(); ?>index.php?admin/manage_language">
-                        <span><i class="entypo-dot"></i> <?php echo get_phrase('language_settings'); ?></span>
+                <li class="<?php if ($page_name == 'expenses') echo 'active'; ?> ">
+                    <a href="<?php echo base_url(); ?>index.php?admin/expenses/<?= date('d/m/Y'); ?>">
+                        <span><i class="entypo-dot"></i>Expenses</span>
                     </a>
-                </li> -->
+                </li>
+
+                <li class="<?php if ($page_name == 'fee_collection') echo 'active'; ?> ">
+                    <a href="<?php echo base_url(); ?>index.php?admin/fee_collection">
+                        <span><i class="entypo-dot"></i>Fee Section</span>
+                    </a>
+                </li>
             </ul>
         </li>
 

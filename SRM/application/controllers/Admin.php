@@ -13,7 +13,7 @@ class Admin extends CI_Controller
 		
        /*cache control*/
 		$this->output->set_header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
-		$this->output->set_header('Pragma: no-cache');
+        $this->output->set_header('Pragma: no-cache');
 		
     }
     
@@ -1142,5 +1142,136 @@ class Admin extends CI_Controller
         $page_data['fee_structure'] = $this->db->get('fee_structure')->result_array();
         $this->load->view('backend/index',$page_data);
     }
+
+    function item_inventory($param1 = '', $param2 = ''){
+        if ($this->session->userdata('admin_login') != 1)
+            redirect(base_url() . 'index.php?login', 'refresh');
+
+        if($param1 == 'create'){
+            $name = $this->input->post('name');
+            $quantity = $this->input->post('quantity');
+            $item_type = $this->input->post('item_type');
+            $date_of_purchase = $this->input->post('date_of_purchase');
+            $price = $this->input->post('price');
+
+            $this->db->insert('items',[
+                'name' => $name,
+                'quantity' => $quantity,
+                'item_type' => $item_type
+            ]);
+
+            $this->db->insert('expenses',[
+                'item_id' => $this->db->insert_id(),
+                'date_of_purchase' => $date_of_purchase,
+                'price' => $price,
+                'quantity' => $quantity
+            ]);
+
+            $this->session->set_flashdata('flash_message' , 'Item Added.');
+            redirect(base_url() . 'index.php?admin/item_inventory/', 'refresh');
+        }
+
+        if($param1 == 'do_update'){
+
+            $name = $this->input->post('name');
+            $quantity = $this->input->post('quantity');
+            $item_type = $this->input->post('item_type');
+            $date_of_purchase = $this->input->post('date_of_purchase');
+            $price = $this->input->post('price');
+            $old_quantity = $this->input->post('old_qunatity');
+
+            $this->db->where('item_id',$param2)->update('items',[
+                'name' => $name,
+                'quantity' => $quantity,
+                'item_type' => $item_type
+            ]);
+
+            $this->db->insert('expenses',[
+                'item_id' => $param2,
+                'date_of_purchase' => $date_of_purchase,
+                'price' => $price,
+                'quantity' => ($quantity - $old_quantity)
+            ]);
+
+            $this->session->set_flashdata('flash_message' , 'Item Added.');
+            redirect(base_url() . 'index.php?admin/item_inventory/', 'refresh');
+        }
+
+        if($param1 == 'lend'){
+            $quantity = $this->input->post('quantity');
+            $lended_to = $this->input->post('lended_to');
+            $date_of_purchase = $this->input->post('date_of_purchase');
+            $price = $this->input->post('price');
+            $old_quantity = $this->input->post('old_qunatity');
+
+            $this->db->where('item_id',$param2)->update('items',[
+                'quantity' => ($old_quantity - $quantity),
+            ]);
+
+            $this->db->insert('lended_items',[
+                'item_id' => $param2,
+                'date' => $date_of_purchase,
+                'price' => $price,
+                'quantity' => $quantity,
+                'lended_to' => $lended_to
+            ]);
+
+            $this->session->set_flashdata('flash_message' , 'Item lended.');
+            redirect(base_url() . 'index.php?admin/item_inventory/', 'refresh');
+
+        }
+        
+        $page_data['page_name'] = 'item_inventory';
+        $page_data['page_title'] = 'Item Inventory';
+        $page_data['items'] = $this->db->get('items')->result_array();
+
+        $this->load->view('backend/index',$page_data);
+    }
+
+    function expenses($date = '', $month = '', $year = ''){
+        if ($this->session->userdata('admin_login') != 1)
+            redirect(base_url() . 'index.php?login', 'refresh');
+        
+        $page_data['page_name'] = 'expenses';
+        $page_data['page_title'] = 'Expenses';
+        $page_data['date'] = $date;
+        $page_data['month'] = $month;
+        $page_data['year'] = $year;
+        $fulldate = $month.'/'.$date.'/'.$year;
+        $page_data['full_date'] = $fulldate;
+        $page_data['expenses'] = $this->db->get_where('expenses',['date_of_purchase' => $fulldate])->result_array();
+
+        $this->load->view('backend/index',$page_data);
+    }
+
+    function expsense_selector(){
+        redirect(base_url().
+            'index.php?admin/expenses/'.
+            $this->input->post('date').'/'.
+            $this->input->post('month').'/'.
+            $this->input->post('year')
+        );
+    }
+
+    function fee_collection($param1 = ''){
+
+        if($param1 == 'create'){
+            print_r($_POST);
+        }
+
+        $page_data['page_name'] = 'fee_collection';
+        $page_data['page_title'] = 'Fee Section';
+
+        $this->load->view('backend/index',$page_data);
+    }
     
+    function get_students($class_id)
+    {
+        $students = $this->db->get_where('student' , array(
+            'class_id' => $class_id
+        ))->result_array();
+        foreach ($students as $row) {
+            echo '<option value="' . $row['student_id'] . '">' . $row['name'] . '</option>';
+        }
+     }
 }

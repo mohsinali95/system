@@ -1,10 +1,7 @@
 <?php
-
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
-
 class Login extends CI_Controller {
-
     function __construct() {
         parent::__construct();
         $this->load->model('crud_model');
@@ -15,51 +12,62 @@ class Login extends CI_Controller {
         $this->output->set_header('Pragma: no-cache');
         $this->output->set_header("Expires: Mon, 26 Jul 2010 05:00:00 GMT");
     }
-
     //Default function, redirects to logged in user area
     public function index() {
-
         if ($this->session->userdata('admin_login') == 1)
             redirect(base_url('index.php?admin/dashboard'), 'refresh');
-
         if ($this->session->userdata('teacher_login') == 1)
             redirect(base_url() . 'index.php?teacher/dashboard', 'refresh');
-
         if ($this->session->userdata('student_login') == 1)
             redirect(base_url() . 'index.php?student/dashboard', 'refresh');
-
         if ($this->session->userdata('parent_login') == 1)
             redirect(base_url() . 'index.php?parents/dashboard', 'refresh');
-
         $this->load->view('backend/login');
     }
-
-
     //Ajax login function 
-    function ajax_login() {
-        $response = array();
+    // function ajax_login() {
+    //     $response = array();
+    //     //Recieving post input of email, password from ajax request
+    //     $email = $_POST["email"];
+    //     $password = $_POST["password"];
+    //     $response['submitted_data'] = $_POST;
+    //     //Validating login
+    //     $login_status = $this->validate_login($email, $password);
+    //     $response['login_status'] = $login_status;
+    //     if ($login_status == 'success') {
+    //         $response['redirect_url'] = '';
+    //     }
+    //     //Replying ajax request with validation response
+    //     echo json_encode($response);
+    // }
 
-        //Recieving post input of email, password from ajax request
-        $email = $_POST["email"];
-        $password = $_POST["password"];
-        $response['submitted_data'] = $_POST;
+    function do_login(){
+        $email = $this->input->post('email');
+        $password = $this->input->post('password');
 
-        //Validating login
-        $login_status = $this->validate_login($email, $password);
-        $response['login_status'] = $login_status;
-        if ($login_status == 'success') {
-            $response['redirect_url'] = '';
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('email', 'Email', 'required');
+        $this->form_validation->set_rules('password', 'Password', 'required');
+
+        if ($this->form_validation->run() == FALSE)
+        {
+            $this->load->view('backend/login');
         }
-
-        //Replying ajax request with validation response
-        echo json_encode($response);
+        else
+        {
+            $login_status = $this->validate($email , $password);
+            if($login_status == 'invalid'){
+                $this->session->set_flashdata('login','Email or password Invalid');
+                redirect(base_url());
+            }else{
+                redirect(base_url().$login_status);
+            }
+        }
     }
 
     //Validating login from ajax request
-    function validate_login($email = '', $password = '') {
+    function validate($email = '', $password = '') {
         $credential = array('email' => $email, 'password' => $password);
-
-
         // Checking login credential for admin
         $query = $this->db->get_where('admin', $credential);
         if ($query->num_rows() > 0) {
@@ -69,9 +77,8 @@ class Login extends CI_Controller {
             $this->session->set_userdata('login_user_id', $row->admin_id);
             $this->session->set_userdata('name', $row->name);
             $this->session->set_userdata('login_type', 'admin');
-            return 'success';
+            return 'index.php?admin/dashboard';
         }
-
         // Checking login credential for teacher
         $query = $this->db->get_where('teacher', $credential);
         if ($query->num_rows() > 0) {
@@ -81,9 +88,8 @@ class Login extends CI_Controller {
             $this->session->set_userdata('login_user_id', $row->teacher_id);
             $this->session->set_userdata('name', $row->name);
             $this->session->set_userdata('login_type', 'teacher');
-            return 'success';
+            return 'index.php?teacher/dashboard';
         }
-
         // Checking login credential for student
         $query = $this->db->get_where('student', $credential);
         if ($query->num_rows() > 0) {
@@ -93,9 +99,8 @@ class Login extends CI_Controller {
             $this->session->set_userdata('login_user_id', $row->student_id);
             $this->session->set_userdata('name', $row->name);
             $this->session->set_userdata('login_type', 'student');
-            return 'success';
+            return 'index.php?student/dashboard';
         }
-
         // Checking login credential for parent
         $query = $this->db->get_where('parent', $credential);
         if ($query->num_rows() > 0) {
@@ -105,24 +110,19 @@ class Login extends CI_Controller {
             $this->session->set_userdata('login_user_id', $row->parent_id);
             $this->session->set_userdata('name', $row->name);
             $this->session->set_userdata('login_type', 'parent');
-            return 'success';
+            return 'index.php?parents/dashboard';
         }
-
         return 'invalid';
     }
-
     /*     * *DEFAULT NOR FOUND PAGE**** */
-
     function four_zero_four() {
         $this->load->view('four_zero_four');
     }
-
     // PASSWORD RESET BY EMAIL
     function forgot_password()
     {
         $this->load->view('backend/forgot_password');
     }
-
     function ajax_forgot_password()
     {
         $resp                   = array();
@@ -131,7 +131,6 @@ class Login extends CI_Controller {
         $reset_account_type     = '';
         //resetting user password here
         $new_password           =   substr( md5( rand(100000000,20000000000) ) , 0,7);
-
         // Checking credential for admin
         $query = $this->db->get_where('admin' , array('email' => $email));
         if ($query->num_rows() > 0) 
@@ -168,21 +167,15 @@ class Login extends CI_Controller {
             $this->db->update('parent' , array('password' => $new_password));
             $resp['status']         = 'true';
         }
-
         // send new password to user email  
         $this->email_model->password_reset_email($new_password , $reset_account_type , $email);
-
         $resp['submitted_data'] = $_POST;
-
         echo json_encode($resp);
     }
-
     /*     * *****LOGOUT FUNCTION ****** */
-
     function logout() {
         $this->session->sess_destroy();
         $this->session->set_flashdata('logout_notification', 'logged_out');
         redirect(base_url(), 'refresh');
     }
-
 }
