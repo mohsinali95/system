@@ -1255,21 +1255,51 @@ class Admin extends CI_Controller
 
     function fee_collection($param1 = ''){
 
+        $this->load->helpers('date_checker');
+        $amount = get_amount(6);
+        echo $amount;
         if($param1 == 'create'){
-            print_r($_POST);
+            $slip_no = $this->input->post('slip_no');
+            $class_id = $this->input->post('class_id');
+            $student_id = $this->input->post('student_id');
+            $date = $this->input->post('date');
+            // $amount = 
+
+            $this->db->insert('fee',[
+                'slip_no' => $slip_no,
+                'class_id' => $class_id,
+                'student_id' => $student_id,
+                'date' => date("Y-m-d",strtotime($date))
+            ]);
+
+            $this->session->set_flashdata('flash_message' , 'Fee collected.');
+            redirect(base_url() . 'index.php?admin/fee_collection/', 'refresh');
+
         }
 
+        $page_data['paid'] = check_date();
         $page_data['page_name'] = 'fee_collection';
         $page_data['page_title'] = 'Fee Section';
+        $page_data['total'] = $this->db->count_all('student');
 
         $this->load->view('backend/index',$page_data);
+
     }
     
+    function check_slipno($data){
+        $query = $this->db->get_where('fee',['slip_no' => $data])
+        ->num_rows();
+        echo $query;
+    }
+
     function get_students($class_id)
     {
-        $students = $this->db->get_where('student' , array(
-            'class_id' => $class_id
-        ))->result_array();
+        $students = $this->db->select('*')
+        ->from('fee')
+        ->join('student','student.student_id=fee.student_id','right')
+        ->where(['fee.student_id' => null, 'student.class_id' => $class_id])
+        ->get()->result_array();
+
         foreach ($students as $row) {
             echo '<option value="' . $row['student_id'] . '">' . $row['name'] . '</option>';
         }

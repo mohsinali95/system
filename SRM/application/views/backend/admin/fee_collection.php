@@ -15,9 +15,9 @@
 						<label for="field-2" class="col-sm-3 control-label">Slip No.</label>
                         
 						<div class="col-sm-5">
-							<input type="text" class="form-control" data-validate="required" data-message-required="<?php echo get_phrase('value_required');?>" name="slip_no" id="grno" value="" >
+							<input type="text" class="form-control" data-validate="required" data-message-required="<?php echo get_phrase('value_required');?>" name="slip_no" id="slip_no" value="" >
 						</div>
-						<div class="col-sm-3" style="color: red; display: none" id="gr_res">G.R number already present</div> 
+						<div class="col-sm-3" style="color: red; display: none" id="gr_res">Slip No. number already present</div> 
 					</div>
 
 					<div class="form-group">
@@ -105,9 +105,9 @@
 		<div class="row">
             <div class="col-md-12">
             
-                <div class="tile-stats tile-red">
+                <div class="tile-stats tile-blue">
                     <div class="icon"><i class="fa fa-group"></i></div>
-                    <div class="num" data-start="0" data-end="<?php echo $this->db->count_all('student');?>" 
+                    <div class="num" data-start="0" data-end="<?= $total ?>" 
                     		data-postfix="" data-duration="1500" data-delay="0">0</div>
                     
                     <h3><?php echo get_phrase('student');?></h3>
@@ -119,23 +119,20 @@
             
                 <div class="tile-stats tile-green">
                     <div class="icon"><i class="entypo-users"></i></div>
-                    <div class="num" data-start="0" data-end="<?php echo $this->db->count_all('teacher');?>" 
+                    <div class="num" data-start="0" data-end="<?= $paid ?>" 
                     		data-postfix="" data-duration="800" data-delay="0">0</div>
-                    
-                    <h3><?php echo get_phrase('teacher');?></h3>
-                   <p>Total teachers</p>
+                    <h3>Total Paid this month</h3>
                 </div>
                 
             </div>
             <div class="col-md-12">
             
-                <div class="tile-stats tile-blue">
+                <div class="tile-stats tile-red">
                     <div class="icon"><i class="entypo-user"></i></div>
-                    <div class="num" data-start="0" data-end="<?php echo $this->db->count_all('parent');?>" 
+                    <div class="num" data-start="0" data-end="<?= $total-$paid ?>" 
                     		data-postfix="" data-duration="500" data-delay="0">0</div>
                     
-                    <h3><?php echo get_phrase('parent');?></h3>
-                   <p>Total parents</p>
+                    <h3>Total unpaid this month</h3>
                 </div>
                 
             </div>
@@ -147,7 +144,23 @@
 
 
 <script>
+$(document).ready(function(){
 
+	$("#slip_no").blur(function(){
+		var slip = $(this).val();
+		$.ajax({
+			url : '<?php echo base_url();?>index.php?admin/check_slipno/' + slip ,
+			method : "POST",
+		}).done(function(response){
+			if(response == 0){
+				$("#gr_res").show();
+			}else{
+				$("#gr_res").hide();
+			}
+		})
+	})
+
+});
 function get_students(class_id) {
 
 $.ajax({
